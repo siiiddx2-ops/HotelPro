@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: light; }
+.dark { color-scheme: dark; }
+* { -webkit-font-smoothing: antialiased; }
+html { scroll-behavior: smooth; }
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold
+           transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-400
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary { @apply btn bg-primary-600 text-white hover:bg-primary-700 shadow-sm; }
+  .btn-secondary { @apply btn bg-white text-ink-700 border border-ink-200 hover:bg-ink-50 dark:bg-ink-800 dark:text-ink-200 dark:border-ink-700 dark:hover:bg-ink-700; }
+  .btn-ghost { @apply btn text-ink-600 hover:bg-ink-100 dark:text-ink-300 dark:hover:bg-ink-800; }
+  .btn-danger { @apply btn bg-red-600 text-white hover:bg-red-700; }
+  .btn-accent { @apply btn bg-accent-500 text-ink-900 hover:bg-accent-400; }
+
+  .input {
+    @apply w-full rounded-lg border border-ink-200 bg-white px-3.5 py-2.5 text-sm text-ink-900
+           placeholder:text-ink-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-200
+           focus:outline-none transition-all
+           dark:bg-ink-800 dark:border-ink-700 dark:text-ink-100 dark:placeholder:text-ink-500
+           dark:focus:border-primary-500 dark:focus:ring-primary-900;
+  }
+  .label { @apply block text-sm font-medium text-ink-700 mb-1.5 dark:text-ink-300; }
+  .card { @apply rounded-2xl bg-white border border-ink-100 shadow-card dark:bg-ink-800 dark:border-ink-700; }
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+  .section-title { @apply font-display text-2xl font-semibold text-ink-900 dark:text-ink-50; }
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+.dark ::-webkit-scrollbar-thumb { background: #334155; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+@keyframes fade-in { from { opacity: 0; transform: translateY(8px);} to { opacity:1; transform:none; } }
+.animate-fade-in { animation: fade-in 0.4s ease-out both; }
+@keyframes slide-in { from { opacity:0; transform: translateX(12px);} to {opacity:1; transform:none;} }
+.animate-slide-in { animation: slide-in 0.3s ease-out both; }

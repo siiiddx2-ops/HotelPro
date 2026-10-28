@@ -1,8 +1,13 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import type { Session } from "@supabase/supabase-js";
-import { supabase, type Profile, type Role } from "./supabase";
+import { apiCurrentUser, apiLogin, apiRegister, apiUpdateProfile, type ApiUser } from "./api";
+import type { Profile, Role } from "./supabase";
 
 export type { Role };
+
+interface Session {
+  access_token: string;
+  user: { id: string; email: string };
+}
 
 interface AuthContextValue {
   session: Session | null;
@@ -20,130 +25,107 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+function toProfile(user: ApiUser): Profile {
+  return {
+    id: user.id,
+    role: user.role,
+    full_name: user.fullName,
+    phone: user.phone,
+    created_at: user.createdAt,
+  };
+}
+
+function toSession(token: string, user: ApiUser): Session {
+  return { access_token: token, user: { id: user.id, email: user.email } };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  async function loadProfile(uid: string) {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", uid)
-      .maybeSingle();
-    if (error) {
-      console.warn("profile load error", error.message);
-      setProfile(null);
+  async function restoreSession() {
+    if (!localStorage.getItem("hotelpro_token")) {
+      setLoading(false);
       return;
     }
-    setProfile(data as Profile | null);
+    try {
+      const { user } = await apiCurrentUser();
+      setProfile(toProfile(user));
+      setSession({ access_token: localStorage.getItem("hotelpro_token") as string, user: { id: user.id, email: user.email } });
+    } catch {
+      localStorage.removeItem("hotelpro_token");
+      setSession(null);
+      setProfile(null);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
-    let mounted = true;
-    let initialLoaded = false;
-
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
-      initialLoaded = true;
-      setSession(data.session);
-      if (data.session) {
-        loadProfile(data.session.user.id).finally(() => mounted && setLoading(false));
-      } else {
-        setLoading(false);
-      }
-    });
-
-    const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
-      if (!mounted) return;
-      setSession(newSession);
-      if (newSession) {
-        // Avoid duplicate load on initial session event
-        if (initialLoaded && event === "INITIAL_SESSION") return;
-        initialLoaded = true;
-        (async () => {
-          await loadProfile(newSession.user.id);
-          if (mounted) setLoading(false);
-        })();
-      } else {
-        setProfile(null);
-        if (mounted) setLoading(false);
-      }
-    });
-
-    return () => {
-      mounted = false;
-      sub.subscription.unsubscribe();
-    };
+    void restoreSession();
   }, []);
 
   async function refreshProfile() {
-    if (session) await loadProfile(session.user.id);
+    try {
+      const { user } = await apiCurrentUser();
+      setProfile(toProfile(user));
+    } catch {
+      setProfile(null);
+    }
   }
 
   async function signIn(email: string, password: string) {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error ? error.message : null };
+    try {
+      const result = await apiLogin(email, password);
+      localStorage.setItem("hotelpro_token", result.token);
+      setSession(toSession(result.token, result.user));
+      setProfile(toProfile(result.user));
+      return { error: null };
+    } catch (error) {
+      return { error: (error as Error).message };
+    }
   }
 
   async function signUp(email: string, password: string, fullName: string, role: Role) {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName, role } },
-    });
-    if (error) return { error: error.message };
-    if (data.user && !data.session) {
-      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-      if (signInError) return { error: signInError.message };
+    if (role !== "guest") return { error: "Staff and admin accounts must be created by an administrator." };
+    try {
+      const result = await apiRegister(email, password, fullName);
+      localStorage.setItem("hotelpro_token", result.token);
+      setSession(toSession(result.token, result.user));
+      setProfile(toProfile(result.user));
+      return { error: null };
+    } catch (error) {
+      return { error: (error as Error).message };
     }
-    return { error: null };
   }
 
   async function updateProfile(updates: { full_name?: string; phone?: string; avatar_url?: string }) {
-    if (!session) return { error: "Not signed in" };
-    const { error } = await supabase
-      .from("profiles")
-      .update(updates)
-      .eq("id", session.user.id);
-    if (error) return { error: error.message };
-    await refreshProfile();
-    return { error: null };
+    try {
+      const { user } = await apiUpdateProfile({ fullName: updates.full_name, phone: updates.phone });
+      setProfile(toProfile(user));
+      return { error: null };
+    } catch (error) {
+      return { error: (error as Error).message };
+    }
   }
 
-  async function changePassword(newPassword: string) {
-    if (newPassword.length < 6) return { error: "Password must be at least 6 characters" };
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    return { error: error ? error.message : null };
+  async function changePassword(_newPassword: string) {
+    return { error: "Password changes are not available in the new API yet." };
   }
 
-  async function resetPassword(email: string) {
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
-    return { error: error ? error.message : null };
+  async function resetPassword(_email: string) {
+    return { error: "Password reset is not available in the new API yet." };
   }
 
   async function signOut() {
-    await supabase.auth.signOut();
+    localStorage.removeItem("hotelpro_token");
     setProfile(null);
     setSession(null);
   }
 
   return (
-    <AuthContext.Provider
-      value={{
-        session,
-        profile,
-        loading,
-        role: profile?.role ?? null,
-        signIn,
-        signUp,
-        signOut,
-        refreshProfile,
-        updateProfile,
-        changePassword,
-        resetPassword,
-      }}
-    >
+    <AuthContext.Provider value={{ session, profile, loading, role: profile?.role ?? null, signIn, signUp, signOut, refreshProfile, updateProfile, changePassword, resetPassword }}>
       {children}
     </AuthContext.Provider>
   );

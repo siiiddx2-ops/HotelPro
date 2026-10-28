@@ -18,7 +18,7 @@ export default function AdminPaymentsPage() {
     try {
       const { data, error } = await supabase
         .from("payments")
-        .select("*, guest:profiles!payments_guest_id_fkey(full_name, email), booking:bookings(room:rooms(room_number, hotel:hotels(name)))")
+        .select("*, guest:profiles!payments_guest_id_fkey(full_name, phone), booking:bookings(room:rooms(room_number, hotel:hotels(name)))")
         .order("created_at", { ascending: false });
       if (error) throw error;
       setPayments(data ?? []);
@@ -111,7 +111,7 @@ export default function AdminPaymentsPage() {
                   <tr key={p.id} className="hover:bg-ink-50 dark:hover:bg-ink-800/50">
                     <td className="px-4 py-3">
                       <p className="font-medium text-ink-900 dark:text-ink-100">{p.guest?.full_name || "—"}</p>
-                      <p className="text-xs text-ink-500">{p.guest?.email}</p>
+                      <p className="text-xs text-ink-500">{p.guest?.phone || "No phone provided"}</p>
                     </td>
                     <td className="px-4 py-3 text-ink-600 dark:text-ink-300">
                       <p>{p.booking?.room?.room_number ?? "—"}</p>

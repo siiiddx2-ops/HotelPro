@@ -20,8 +20,8 @@ export default function AdminStaffPage() {
     setLoading(true);
     try {
       const [p, a, h] = await Promise.all([
-        supabase.from("profiles").select("id, role, full_name, phone, email, created_at, hotel_id").order("created_at", { ascending: false }),
-        supabase.from("staff_assignments").select("*, user:profiles!staff_assignments_user_id_fkey(full_name, email, phone), hotel:hotels(name)").order("created_at", { ascending: false }),
+        supabase.from("profiles").select("id, role, full_name, phone, created_at, hotel_id").order("created_at", { ascending: false }),
+        supabase.from("staff_assignments").select("*, user:profiles!staff_assignments_user_id_fkey(full_name, phone), hotel:hotels(name)").order("created_at", { ascending: false }),
         supabase.from("hotels").select("id, name").order("name"),
       ]);
       if (p.error) throw p.error;
@@ -44,7 +44,7 @@ export default function AdminStaffPage() {
   const filtered = profiles.filter((p) => {
     if (!search) return true;
     const s = search.toLowerCase();
-    return p.full_name?.toLowerCase().includes(s) || (p as any).email?.toLowerCase().includes(s);
+    return p.full_name?.toLowerCase().includes(s) || p.phone?.toLowerCase().includes(s);
   });
 
   async function setRole(id: string, role: string) {
@@ -164,7 +164,7 @@ export default function AdminStaffPage() {
               <thead className="bg-ink-50 text-ink-500 text-left dark:bg-ink-900/50 dark:text-ink-400">
                 <tr>
                   <th className="px-4 py-3 font-medium">Name</th>
-                  <th className="px-4 py-3 font-medium">Email</th>
+                  <th className="px-4 py-3 font-medium">Phone</th>
                   <th className="px-4 py-3 font-medium">Role</th>
                   <th className="px-4 py-3 font-medium">Joined</th>
                   <th className="px-4 py-3 font-medium text-right">Change role</th>
@@ -177,7 +177,7 @@ export default function AdminStaffPage() {
                       <p className="font-medium text-ink-900 dark:text-ink-100">{p.full_name || "Unnamed"}</p>
                       <p className="text-xs text-ink-500">{p.phone || "—"}</p>
                     </td>
-                    <td className="px-4 py-3 text-ink-600 dark:text-ink-300 text-xs">{(p as any).email || "—"}</td>
+                    <td className="px-4 py-3 text-ink-600 dark:text-ink-300 text-xs">{p.phone || "—"}</td>
                     <td className="px-4 py-3">
                       <Badge tone={p.role === "admin" ? "blue" : p.role === "staff" ? "amber" : "neutral"}>{p.role}</Badge>
                     </td>

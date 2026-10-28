@@ -21,7 +21,7 @@ export default function CheckInOutPage() {
     try {
       const { data, error } = await supabase
         .from("bookings")
-        .select("*, guest:profiles!bookings_guest_id_fkey(full_name, email), room:rooms(id, room_number, status, category:room_categories(name)), hotel:hotels(name)")
+        .select("*, guest:profiles!bookings_guest_id_fkey(full_name, phone), room:rooms(id, room_number, status, category:room_categories(name)), hotel:hotels(name)")
         .in("status", ["confirmed", "checked_in"])
         .order("check_in");
       if (error) throw error;
@@ -112,7 +112,7 @@ export default function CheckInOutPage() {
                   <h3 className="font-semibold text-ink-900">{b.guest?.full_name || "Guest"}</h3>
                   <StatusBadge status={b.status} />
                 </div>
-                <p className="text-sm text-ink-500">{b.guest?.email}</p>
+                <p className="text-sm text-ink-500">{b.guest?.phone || "No phone provided"}</p>
                 <div className="mt-2 flex flex-wrap gap-4 text-xs text-ink-500">
                   <span>Room {b.room?.room_number} · {b.room?.category?.name}</span>
                   <span>Check-in: {formatDate(b.check_in)}</span>

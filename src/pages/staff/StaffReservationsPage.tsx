@@ -19,7 +19,7 @@ export default function StaffReservationsPage() {
     try {
       const { data, error } = await supabase
         .from("bookings")
-        .select("*, guest:profiles!bookings_guest_id_fkey(full_name, email), room:rooms(room_number, category:room_categories(name)), hotel:hotels(name)")
+        .select("*, guest:profiles!bookings_guest_id_fkey(full_name, phone), room:rooms(room_number, category:room_categories(name)), hotel:hotels(name)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       setBookings(data ?? []);
@@ -103,7 +103,7 @@ export default function StaffReservationsPage() {
                   <tr key={b.id} className="hover:bg-ink-50">
                     <td className="px-4 py-3">
                       <p className="font-medium text-ink-900">{b.guest?.full_name || "Guest"}</p>
-                      <p className="text-xs text-ink-500">{b.guest?.email}</p>
+                      <p className="text-xs text-ink-500">{b.guest?.phone || "No phone provided"}</p>
                     </td>
                     <td className="px-4 py-3">
                       <p>{b.room?.room_number}</p>

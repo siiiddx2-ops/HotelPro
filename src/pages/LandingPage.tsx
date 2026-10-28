@@ -6,6 +6,7 @@ import {
 import { useAuth } from "../lib/auth";
 import { defaultPath } from "../lib/routes";
 import { Logo } from "../components/ui";
+import ThemeToggle from "../components/ThemeToggle";
 
 const HERO_IMG = "https://images.pexels.com/photos/14011664/pexels-photo-14011664.jpeg?auto=compress&cs=tinysrgb&h=650&w=940";
 
@@ -29,7 +30,8 @@ export default function LandingPage() {
   const ctaTo = profile ? defaultPath(profile.role) : "/signin";
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-ink-950">
+      <ThemeToggle className="fixed top-4 right-4 z-50" />
       <header className="absolute top-0 left-0 right-0 z-30">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6">
           <Logo />
@@ -81,7 +83,7 @@ export default function LandingPage() {
       </section>
 
       {/* Stats bar */}
-      <section className="border-y border-ink-100 bg-ink-50">
+      <section className="border-y border-ink-100 bg-ink-50 dark:border-ink-800 dark:bg-ink-900">
         <div className="mx-auto grid max-w-7xl grid-cols-2 md:grid-cols-4 divide-x divide-ink-200">
           {[
             { label: "Rooms managed", value: "12,000+" },
@@ -98,13 +100,13 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section id="features" className="py-24">
+      <section id="features" className="py-24 dark:bg-ink-950">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="font-display text-3xl sm:text-4xl font-semibold text-ink-900">
+            <h2 className="font-display text-3xl sm:text-4xl font-semibold text-ink-900 dark:text-ink-50">
               Everything a modern hotel needs
             </h2>
-            <p className="mt-4 text-ink-500 text-lg">
+            <p className="mt-4 text-ink-500 text-lg dark:text-ink-400">
               From the first booking to checkout, HotelPro brings every workflow together in one secure platform.
             </p>
           </div>
@@ -123,13 +125,13 @@ export default function LandingPage() {
       </section>
 
       {/* Roles */}
-      <section id="roles" className="bg-ink-50 py-24">
+      <section id="roles" className="bg-ink-50 py-24 dark:bg-ink-900">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="font-display text-3xl sm:text-4xl font-semibold text-ink-900">
+            <h2 className="font-display text-3xl sm:text-4xl font-semibold text-ink-900 dark:text-ink-50">
               Built for every role
             </h2>
-            <p className="mt-4 text-ink-500 text-lg">
+            <p className="mt-4 text-ink-500 text-lg dark:text-ink-400">
               Tailored dashboards for guests, staff, and administrators — each with the right tools and access.
             </p>
           </div>
@@ -163,16 +165,16 @@ export default function LandingPage() {
       </section>
 
       {/* Security */}
-      <section id="security" className="py-24">
+      <section id="security" className="py-24 dark:bg-ink-950">
         <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-2 items-center">
           <div>
             <span className="inline-flex items-center gap-2 rounded-full bg-primary-50 px-3 py-1 text-xs font-medium text-primary-700">
               <ShieldCheck className="h-3.5 w-3.5" /> Security & Compliance
             </span>
-            <h2 className="mt-5 font-display text-3xl sm:text-4xl font-semibold text-ink-900">
+            <h2 className="mt-5 font-display text-3xl sm:text-4xl font-semibold text-ink-900 dark:text-ink-50">
               Security at every layer
             </h2>
-            <p className="mt-4 text-ink-600 text-lg leading-relaxed">
+            <p className="mt-4 text-ink-600 text-lg leading-relaxed dark:text-ink-300">
               HotelPro is built on Supabase with Postgres row-level security, JWT authentication,
               and role-based access control — so data never leaks between guests, staff, or properties.
             </p>

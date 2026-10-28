@@ -4,6 +4,7 @@ import { useAuth } from "../lib/auth";
 import { useToast } from "../components/Toast";
 import { Logo, Spinner } from "../components/ui";
 import { Mail, Lock, ArrowRight } from "lucide-react";
+import ThemeToggle from "../components/ThemeToggle";
 
 export default function SignInPage() {
   const { signIn } = useAuth();
@@ -69,7 +70,8 @@ export default function SignInPage() {
 
 export function AuthShell({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
   return (
-    <div className="min-h-screen grid lg:grid-cols-2">
+    <div className="min-h-screen grid lg:grid-cols-2 bg-ink-50 dark:bg-ink-950">
+      <ThemeToggle className="fixed top-4 right-4 z-50" />
       <div className="hidden lg:block relative">
         <img
           src="https://images.pexels.com/photos/14011664/pexels-photo-14011664.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"
@@ -90,13 +92,13 @@ export function AuthShell({ title, subtitle, children }: { title: string; subtit
           <p className="text-white/60 text-sm">© 2026 HotelPro. All rights reserved.</p>
         </div>
       </div>
-      <div className="flex items-center justify-center px-6 py-12 bg-ink-50">
+      <div className="flex items-center justify-center px-6 py-12 bg-ink-50 dark:bg-ink-950">
         <div className="w-full max-w-md">
           <div className="lg:hidden mb-8">
             <Logo />
           </div>
-          <h1 className="font-display text-2xl font-semibold text-ink-900">{title}</h1>
-          <p className="mt-1 text-ink-500">{subtitle}</p>
+          <h1 className="font-display text-2xl font-semibold text-ink-900 dark:text-ink-50">{title}</h1>
+          <p className="mt-1 text-ink-500 dark:text-ink-400">{subtitle}</p>
           <div className="mt-8 card p-6 sm:p-8">{children}</div>
         </div>
       </div>

@@ -47,9 +47,9 @@ export default function App() {
   return (
     <ToastProvider>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/signin" element={<SignInPage />} />
-        <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/" element={profile ? <Navigate to={defaultPath(profile?.role)} replace /> : <LandingPage />} />
+        <Route path="/signin" element={profile ? <Navigate to={defaultPath(profile?.role)} replace /> : <SignInPage />} />
+        <Route path="/signup" element={profile ? <Navigate to={defaultPath(profile?.role)} replace /> : <SignUpPage />} />
 
         {/* Guest area */}
         <Route path="/guest" element={<RequireAuth><GuestLayout /></RequireAuth>}>

@@ -48,10 +48,10 @@ export default function SignUpPage() {
             {roles.map((r) => (
               <button
                 key={r.value} type="button" onClick={() => setRole(r.value)}
-                className={`flex flex-col items-center gap-1 rounded-xl border p-3 text-center transition ${
+                className={`flex flex-col items-center gap-1.5 rounded-xl border p-3 text-center transition ${
                   role === r.value
-                    ? "border-primary-500 bg-primary-50 text-primary-700"
-                    : "border-ink-200 bg-white text-ink-600 hover:border-ink-300"
+                    ? "border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 dark:border-primary-500"
+                    : "border-ink-200 bg-white text-ink-600 hover:border-ink-300 dark:bg-ink-800 dark:border-ink-700 dark:text-ink-300 dark:hover:border-ink-600"
                 }`}
               >
                 {r.icon}
@@ -59,7 +59,7 @@ export default function SignUpPage() {
               </button>
             ))}
           </div>
-          <p className="mt-2 text-xs text-ink-500">{roles.find((r) => r.value === role)?.desc}</p>
+          <p className="mt-2 text-xs text-ink-500 dark:text-ink-400">{roles.find((r) => r.value === role)?.desc}</p>
         </div>
         <div>
           <label className="label">Full name</label>
@@ -89,9 +89,9 @@ export default function SignUpPage() {
           {loading ? <Spinner className="h-4 w-4" /> : <>Create account <ArrowRight className="h-4 w-4" /></>}
         </button>
       </form>
-      <p className="mt-6 text-center text-sm text-ink-500">
+      <p className="mt-6 text-center text-sm text-ink-500 dark:text-ink-400">
         Already have an account?{" "}
-        <Link to="/signin" className="font-semibold text-primary-700 hover:underline">Sign in</Link>
+        <Link to="/signin" className="font-semibold text-primary-700 hover:underline dark:text-primary-400">Sign in</Link>
       </p>
     </AuthShell>
   );

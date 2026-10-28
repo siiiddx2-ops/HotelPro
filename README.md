@@ -42,11 +42,12 @@ HotelPro is a modern hotel management platform for guests, hotel staff, and admi
 
 ## Technology
 
-- React 18
-- TypeScript
-- Vite
-- Tailwind CSS
-- Supabase Authentication and PostgreSQL
+- JavaScript and React JSX
+- React 18 with Vite
+- Bootstrap 5 and Bootstrap Icons
+- Node.js and Express.js API
+- MongoDB with Mongoose
+- JSON Web Token authentication
 - React Router
 - Recharts
 - Lucide React
@@ -58,7 +59,7 @@ HotelPro is a modern hotel management platform for guests, hotel staff, and admi
 
 - Node.js 18 or newer
 - npm
-- A Supabase project with the HotelPro database schema applied
+- MongoDB running locally or a MongoDB connection string
 
 ### Install dependencies
 
@@ -66,14 +67,14 @@ HotelPro is a modern hotel management platform for guests, hotel staff, and admi
 npm install
 ```
 
-### Configure Supabase
+### Configure MongoDB and JWT
 
-The application expects these public client settings to be available in the local environment:
+Set these server values in your local environment. Never commit local environment files or secret keys to GitHub.
 
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
-
-Use the values from your Supabase project. Do not commit local environment files or secret keys to GitHub.
+- `MONGODB_URI`
+- `JWT_SECRET`
+- `CLIENT_ORIGIN` (optional; defaults to `http://localhost:5173`)
+- `PORT` (optional; defaults to `4000`)
 
 ### Start the application
 
@@ -93,22 +94,9 @@ npm run build
 npm run typecheck
 ```
 
-## Database
+## API
 
-The database schema is maintained through Supabase migrations in `supabase/migrations/`. The schema includes:
-
-- User profiles and role-based access
-- Hotels and room categories
-- Rooms and availability states
-- Bookings and payments
-- Reviews and notifications
-- Service requests
-- Staff assignments
-- Seasonal rates
-- Invoices
-- Activity logs
-
-Row-level security policies protect user data and restrict staff and administrator actions by role.
+The Express server provides JWT-protected authentication, profile updates, hotel and room data, bookings, role-protected staff operations, and MongoDB-backed CRUD data routes. Public registration creates guest accounts; staff and administrator roles are managed through administrator-only operations.
 
 ## Project structure
 
@@ -116,11 +104,11 @@ Row-level security policies protect user data and restrict staff and administrat
 src/
 ├── components/       Shared UI elements and feedback components
 ├── layouts/          Guest, staff, admin, and public layouts
-├── lib/              Authentication, Supabase, routing, theme, and utilities
+├── lib/              API client, JWT session, routing, theme, and utilities
 └── pages/            Public, guest, staff, and admin screens
 
-supabase/
-└── migrations/       Database schema and security migrations
+server/
+└── index.ts          Express API, MongoDB models, and JWT middleware
 ```
 
 ## Application routes
@@ -136,10 +124,9 @@ supabase/
 
 ## Security notes
 
-- Authentication uses Supabase email and password authentication.
-- Protected pages require an active authenticated session.
-- Database policies enforce ownership and role-based access.
-- Never expose service-role keys in browser code.
+- Passwords are hashed with bcrypt before storage.
+- Protected API routes require a signed JWT.
+- Staff and administrator operations require role checks on the server.
 - Never commit environment files, access tokens, or private credentials.
 
 ## License

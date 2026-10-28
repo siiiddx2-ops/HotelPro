@@ -245,6 +245,115 @@ app.patch("/api/bookings/:id/status", requireAuth, requireRole("staff", "admin")
   }
 });
 
+app.post("/api/rpc/:name", requireAuth, requireRole("admin"), async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const args = req.body as Record<string, unknown>;
+    if (req.params.name === "set_user_role") {
+      const user = await User.findByIdAndUpdate(args.p_target_user, { role: args.p_role }, { new: true });
+      return user ? res.json({ data: publicUser(user), error: null }) : res.status(404).json({ error: "User not found" });
+    }
+    if (req.params.name === "assign_staff") {
+      const collection = mongoose.connection.collection("staff_assignments");
+      const result = await collection.insertOne({ user_id: args.p_user_id, hotel_id: args.p_hotel_id, department: args.p_department, role: "staff", created_at: new Date().toISOString() });
+      return res.json({ data: { id: result.insertedId.toString() }, error: null });
+    }
+    if (req.params.name === "remove_staff_assignment") {
+      await mongoose.connection.collection("staff_assignments").deleteOne({ _id: new mongoose.Types.ObjectId(String(args.p_assignment_id)) });
+      return res.json({ data: null, error: null });
+    }
+    return res.status(404).json({ error: "Unknown operation" });
+  } catch (error) {
+    next(error);
+  }
+});
+
+const dataCollections = new Set(["profiles", "hotels", "rooms", "room_categories", "bookings", "payments", "reviews", "notifications", "service_requests", "staff_assignments", "seasonal_rates", "activity_logs", "invoices"]);
+
+function dataCollectionName(table: string) {
+  return table === "profiles" ? "users" : table;
+}
+
+function normalizeData(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(normalizeData);
+  if (!value || typeof value !== "object") return value;
+  const source = value as Record<string, unknown>;
+  const result: Record<string, unknown> = { ...source };
+  if (source._id) {
+    result.id = String(source._id);
+    delete result._id;
+  }
+  if (source.__v !== undefined) delete result.__v;
+  if (source.passwordHash !== undefined) delete result.passwordHash;
+  return result;
+}
+
+function dataFilters(query: Record<string, unknown>) {
+  const filters: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(query)) {
+    if (key.startsWith("eq.")) filters[key.slice(3)] = value;
+    if (key.startsWith("in.")) filters[key.slice(3)] = { $in: String(value).split(",") };
+  }
+  return filters;
+}
+
+app.get("/api/data/:table", async (req, res, next) => {
+  try {
+    if (!dataCollections.has(req.params.table)) return res.status(404).json({ error: "Unknown data collection" });
+    const collection = mongoose.connection.collection(dataCollectionName(req.params.table));
+    const query = dataFilters(req.query as Record<string, unknown>);
+    const count = await collection.countDocuments(query);
+    if (req.query.head === "true") return res.json({ data: null, count });
+    const orderBy = typeof req.query.orderBy === "string" ? req.query.orderBy : "created_at";
+    const ascending = req.query.orderAsc !== "false";
+    const limit = typeof req.query.limit === "string" ? Number(req.query.limit) : 0;
+    const cursor = collection.find(query).sort({ [orderBy]: ascending ? 1 : -1 });
+    if (limit > 0) cursor.limit(limit);
+    return res.json({ data: normalizeData(await cursor.toArray()), count });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/data/:table", async (req, res, next) => {
+  try {
+    if (!dataCollections.has(req.params.table)) return res.status(404).json({ error: "Unknown data collection" });
+    const collection = mongoose.connection.collection(dataCollectionName(req.params.table));
+    const records = Array.isArray(req.body) ? req.body : [req.body];
+    const result = await collection.insertMany(records);
+    const ids = Object.values(result.insertedIds);
+    const created = await collection.find({ _id: { $in: ids } }).toArray();
+    return res.status(201).json({ data: normalizeData(created), error: null });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.patch("/api/data/:table", async (req, res, next) => {
+  try {
+    if (!dataCollections.has(req.params.table)) return res.status(404).json({ error: "Unknown data collection" });
+    const collection = mongoose.connection.collection(dataCollectionName(req.params.table));
+    const filter = dataFilters(req.query as Record<string, unknown>);
+    const update = { ...req.body };
+    delete update.id;
+    await collection.updateMany(filter, { $set: update });
+    return res.json({ data: normalizeData(await collection.find(filter).toArray()), error: null });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.delete("/api/data/:table", async (req, res, next) => {
+  try {
+    if (!dataCollections.has(req.params.table)) return res.status(404).json({ error: "Unknown data collection" });
+    const collection = mongoose.connection.collection(dataCollectionName(req.params.table));
+    const filter = dataFilters(req.query as Record<string, unknown>);
+    await collection.deleteMany(filter);
+    return res.json({ data: null, error: null });
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
   console.error(error);
   return res.status(500).json({ error: "Internal server error" });

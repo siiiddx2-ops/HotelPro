@@ -1,0 +1,16 @@
+**/node_modules/
+**/dist/
+
+# Browser automation profile (cookies, history, local storage, and cache).
+demo-captures/screenshots/demo-captures/chrome-test/
+
+# Keep API credentials and local environment settings out of source control.
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
